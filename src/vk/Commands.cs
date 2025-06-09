@@ -47,7 +47,9 @@ namespace Vulkan
 #endif
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return "libvulkan.dylib";
+                // libvulkan.dylib is an additional translation layer from Vulkan SDK.
+                // libMoltenVK supports most libvulkan functions already.
+                return "libMoltenVK.dylib";
             }
             else
             {
@@ -159,6 +161,18 @@ namespace Vulkan
                     {
                         string localPath = Path.Combine(baseDir, libraryName);
                         handle = Libdl.dlopen(localPath, Libdl.RTLD_NOW);
+                    }
+
+                    if (handle == IntPtr.Zero && RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
+                        // Try to load system-wide MoltenVK from /usr/local/lib or /opt/homebrew/lib.
+                        // It is not possible to install MoltenVK under /usr/lib on macOS due to System Integrity Protection.
+                        string localPath = Path.Combine("/opt/homebrew/lib", libraryName);
+                        handle = Libdl.dlopen(localPath, Libdl.RTLD_NOW);
+
+                        if (handle == IntPtr.Zero) {
+                            localPath = Path.Combine("/usr/local/lib", libraryName);
+                            handle = Libdl.dlopen(localPath, Libdl.RTLD_NOW);
+                        }
                     }
                 }
 
