@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -161,6 +161,18 @@ namespace Vulkan
                     {
                         string localPath = Path.Combine(baseDir, libraryName);
                         handle = Libdl.dlopen(localPath, Libdl.RTLD_NOW);
+                    }
+
+                    if (handle == IntPtr.Zero && RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
+                        // Try to load system-wide MoltenVK from /usr/local/lib or /opt/homebrew/lib.
+                        // It is not possible to install MoltenVK under /usr/lib on macOS due to System Integrity Protection.
+                        string localPath = Path.Combine("/opt/homebrew/lib", libraryName);
+                        handle = Libdl.dlopen(localPath, Libdl.RTLD_NOW);
+
+                        if (handle == IntPtr.Zero) {
+                            localPath = Path.Combine("/usr/local/lib", libraryName);
+                            handle = Libdl.dlopen(localPath, Libdl.RTLD_NOW);
+                        }
                     }
                 }
 
