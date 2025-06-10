@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -47,7 +47,9 @@ namespace Vulkan
 #endif
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return "libvulkan.dylib";
+                // libvulkan.dylib is an additional translation layer from Vulkan SDK.
+                // libMoltenVK supports libvulkan functions already.
+                return "libMoltenVK.dylib";
             }
             else
             {
